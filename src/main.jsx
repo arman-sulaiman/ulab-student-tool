@@ -10,6 +10,7 @@ import {WhatsAppDialog,CalendarDialog} from './ExportDialogs.jsx';
 import Admin from './Admin.jsx';
 import {track,screenshotPayload} from './tracking.js';
 import {routinePDFBytes} from './routine-pdf.js';
+import {injectSpeedInsights} from '@vercel/speed-insights';
 const departments={'Department of Computer Science and Engineering':'School of Science and Engineering','Department of Electrical & Electronic Engineering':'School of Science and Engineering','Department of Business Administration':'ULAB School of Business','Department of English and Humanities':'School of Arts and Humanities','Department of Bangla Language and Literature':'School of Arts and Humanities','Department of Media Studies and Journalism':'School of Social Science','Department of Environmental Studies and Sustainability':'School of Environmental and Life Sciences','General Education Department (GED)':'General Education Department (GED)'};
 const initial={type:'Assignment',number:'',title:'',semester:'',code:'',course:'',section:'',group:'',department:Object.keys(departments)[0],faculty:'',designation:'Lecturer',facultyDepartment:Object.keys(departments)[0],school:'School of Science and Engineering',date:new Date(Date.now()-new Date().getTimezoneOffset()*60000).toISOString().slice(0,10),students:[{name:'',id:''}],color:'blue'};
 function useSaved(key,def){const [v,set]=useState(()=>{try{return JSON.parse(localStorage.getItem(key))??def;}catch{return def;}});useEffect(()=>{try{localStorage.setItem(key,JSON.stringify(v));}catch{}},[key,v]);return[v,set];}
@@ -48,4 +49,5 @@ function App(){
  {page==='results'&&<Results/>}{shareFile&&<WhatsAppDialog file={shareFile} onClose={()=>setShareFile(null)}/>} {calendarOpen&&<CalendarDialog classes={routine} onClose={()=>setCalendarOpen(false)} onExport={()=>track('calendar')}/>} {page==='admin'&&<Admin site={site} onSave={setSite}/>}<footer>{site.siteTitle} <span>{site.footer}</span><small>v2.1.0</small></footer></main></div></div>;
 }
 function ImagePreview({file}){const [url,setUrl]=useState('');useEffect(()=>{const u=URL.createObjectURL(file);setUrl(u);return()=>URL.revokeObjectURL(u);},[file]);return <img className="screenshot-preview" src={url} alt="Uploaded routine screenshot"/>;}
+injectSpeedInsights();
 createRoot(document.getElementById('root')).render(<App/>);

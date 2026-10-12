@@ -17,6 +17,7 @@
   },
   "dependencies": {
     "@pdf-lib/fontkit": "^1.1.1",
+    "@vercel/speed-insights": "^2.0.0",
     "concurrently": "^9.1.2",
     "dotenv": "^16.4.7",
     "express": "^4.21.2",
