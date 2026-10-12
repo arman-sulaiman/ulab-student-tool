@@ -1,0 +1,1 @@
+Run `npm run setup-fonts` on Windows or macOS, or place your licensed Times New Roman regular and bold fonts here as `times.ttf` and `timesbd.ttf`. These proprietary fonts are not included in the ZIP.

@@ -1,0 +1,6 @@
+import * as pdfjs from 'pdfjs-dist';
+import workerURL from 'pdfjs-dist/build/pdf.worker.min.mjs?url';
+import {zipSync} from 'fflate';
+import {routinePDFBytes} from './routine-pdf.js';
+pdfjs.GlobalWorkerOptions.workerSrc=workerURL;
+export async function routineJPG(classes){const bytes=await routinePDFBytes(classes);const task=pdfjs.getDocument({data:bytes,standardFontDataUrl:import.meta.env.DEV?'/node_modules/pdfjs-dist/standard_fonts/':'/pdf-fonts/'});const pdf=await task.promise;const files={};try{for(let i=1;i<=pdf.numPages;i++){const page=await pdf.getPage(i);const viewport=page.getViewport({scale:2.5});const canvas=document.createElement('canvas');canvas.width=Math.ceil(viewport.width);canvas.height=Math.ceil(viewport.height);await page.render({canvasContext:canvas.getContext('2d'),viewport,background:'white'}).promise;const blob=await new Promise(resolve=>canvas.toBlob(resolve,'image/jpeg',.95));if(!blob)throw new Error('JPG export failed.');files[`weekly-routine-${i}.jpg`]=new Uint8Array(await blob.arrayBuffer());canvas.width=0;canvas.height=0;}return pdf.numPages===1?{data:files['weekly-routine-1.jpg'],name:'weekly-routine.jpg',type:'image/jpeg'}:{data:zipSync(files,{level:0}),name:'weekly-routine-jpgs.zip',type:'application/zip'};}finally{await task.destroy();}}

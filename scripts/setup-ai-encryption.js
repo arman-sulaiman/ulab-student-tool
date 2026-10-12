@@ -1,0 +1,3 @@
+import fs from 'node:fs';import {randomBytes} from 'node:crypto';
+let env=fs.existsSync('.env')?fs.readFileSync('.env','utf8'):fs.readFileSync('.env.example','utf8');
+if(/^AI_CONFIG_ENCRYPTION_KEY=[a-fA-F0-9]{64}$/m.test(env)){console.log('Encryption key already configured; kept unchanged.');}else{const line='AI_CONFIG_ENCRYPTION_KEY='+randomBytes(32).toString('hex');env=/^AI_CONFIG_ENCRYPTION_KEY=.*$/m.test(env)?env.replace(/^AI_CONFIG_ENCRYPTION_KEY=.*$/m,line):env+'\n'+line;fs.writeFileSync('.env',env+'\n',{mode:0o600});console.log('Encryption key added to .env. Copy it to your hosting environment and keep a secure backup. Admin password was not changed.');}

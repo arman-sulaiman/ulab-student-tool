@@ -1,0 +1,14 @@
+import {PDFDocument,StandardFonts,rgb} from 'pdf-lib';
+import {days,validateRoutine} from '../server/core.js';
+export async function routinePDFBytes(classes){
+ const {classes:rows}=validateRoutine({classes});if(!rows.length)throw new Error('Add at least one class.');
+ const doc=await PDFDocument.create(),regular=await doc.embedFont(StandardFonts.Helvetica),bold=await doc.embedFont(StandardFonts.HelveticaBold);
+ const ink=rgb(.1,.16,.20),muted=rgb(.35,.43,.46),green=rgb(.04,.43,.38),pale=rgb(.94,.97,.96);
+ const width=105, gap=6, left=35;
+ function wrap(text,font,size,maxWidth){let line='',result=[];for(const word of String(text).split(/\s+/)){for(const piece of word.match(/.{1,19}/g)||['']){const candidate=line?line+' '+piece:piece;if(font.widthOfTextAtSize(candidate,size)>maxWidth&&line){result.push(line);line=piece;}else line=candidate;}}if(line)result.push(line);return result;}
+ let page,index=0;
+ function newPage(){page=doc.addPage([842,595]);index++;page.drawRectangle({x:0,y:515,width:842,height:80,color:rgb(.96,.98,.98)});page.drawText('WEEKLY ROUTINE',{x:left,y:550,font:bold,size:23,color:green});page.drawText(`${rows.length} weekly meetings  |  Asia/Dhaka  |  Plan your week, one class at a time`,{x:left,y:529,font:regular,size:9,color:muted});days.forEach((day,i)=>{const x=left+i*(width+gap);page.drawRectangle({x,y:485,width,height:26,color:green});page.drawText(day.slice(0,3).toUpperCase(),{x:x+9,y:494,font:bold,size:10,color:rgb(1,1,1)});});page.drawText('ULAB Student Tool   /   Weekly schedule   /   '+index,{x:left,y:25,font:regular,size:8,color:muted});}
+ const queues=days.map(day=>rows.filter(c=>c.day===day).sort((a,b)=>a.start.localeCompare(b.start)).flatMap(c=>{const lines=[{text:c.start+' - '+c.end,font:bold,color:green},...wrap(c.course,bold,9,width-16).map(text=>({text,font:bold,color:ink})),...wrap([c.room&&'Room '+c.room,c.section&&'Section '+c.section,c.teacher].filter(Boolean).join(' · '),regular,8,width-16).map(text=>({text,font:regular,color:muted}))];const cards=[];for(let offset=0;offset<lines.length;offset+=27){const part=lines.slice(offset,offset+27);if(offset)part.unshift({text:'Continued',font:bold,color:green});cards.push({lines:part,height:Math.max(62,part.length*13+20)});}return cards;}));
+ do{newPage();queues.forEach((queue,i)=>{const x=left+i*(width+gap);let y=476;while(queue.length&&y-queue[0].height>45){const card=queue.shift();page.drawRectangle({x,y:y-card.height,width,height:card.height,color:pale});page.drawRectangle({x,y:y-card.height,width:2,height:card.height,color:green});let ly=y-16;for(const l of card.lines){page.drawText(l.text,{x:x+8,y:ly,size:l.font===bold?9:8,font:l.font,color:l.color});ly-=13;}y-=card.height+8;}if(index===1&&y===476&&!queue.length)page.drawText('No classes',{x:x+8,y:458,size:9,font:regular,color:muted});});}while(queues.some(q=>q.length));
+ return doc.save();
+}
