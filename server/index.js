@@ -12,7 +12,8 @@ import {validateCover,validateRoutine} from './core.js';
 import {coverPDF} from './pdf.js';
 const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..');
 const app=express();app.disable('x-powered-by');if(process.env.VERCEL)app.set('trust proxy',1);app.use(express.json({limit:'12mb'}));
-app.use('/api',(req,res,next)=>{const origin=req.get('origin');if(origin&&!['http://localhost:5173','http://127.0.0.1:5173',`http://localhost:${process.env.PORT||3001}`,`http://127.0.0.1:${process.env.PORT||3001}`,process.env.APP_ORIGIN,process.env.VERCEL_URL?'https://'+process.env.VERCEL_URL:null].includes(origin))return res.status(403).json({error:'Origin not allowed.'});next();});
+app.use('/api',(req,res,next)=>{const origin=req.get('origin');if(origin&&!['http://localhost:5173','http://127.0.0.1:5173',
+    'https://ulab-tool.armansulaiman.me',`http://localhost:${process.env.PORT||3001}`,`http://127.0.0.1:${process.env.PORT||3001}`,process.env.APP_ORIGIN,process.env.VERCEL_URL?'https://'+process.env.VERCEL_URL:null].includes(origin))return res.status(403).json({error:'Origin not allowed.'});next();});
 app.use('/api',(req,res,next)=>{res.set('Cache-Control','no-store');res.set('X-Content-Type-Options','nosniff');if(['POST','PUT','DELETE'].includes(req.method)&&!req.is('application/json'))return res.status(415).json({error:'JSON required.'});next();});
 mountAdmin(app);
 const fonts=async()=>Promise.all(['times.ttf','timesbd.ttf'].map(f=>fs.readFile(path.join(root,'fonts',f))));
